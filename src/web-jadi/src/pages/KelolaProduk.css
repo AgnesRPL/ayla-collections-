@@ -1,0 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+.kelola-container {
+    min-height: 100vh;
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%);
+    font-family: 'Poppins', sans-serif;
+}
+
+.kelola-glass-card {
+    background: rgba(255, 255, 255, 0.2); /* Glassmorphism sama dengan UserAdmin */
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    width: 95%;
+    max-width: 1400px;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+.kelola-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.kelola-header h2 { 
+    color: white; 
+    margin: 0; 
+    font-weight: 600; /* Sama dengan UserAdmin */
+}
+
+/* Tombol Dashboard (Gaya back-home-btn) */
+.btn-dash { 
+    background: white; 
+    border: none; 
+    padding: 10px 20px; 
+    border-radius: 10px; 
+    color: #764ba2; 
+    font-weight: bold; 
+    cursor: pointer; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-family: 'Poppins', sans-serif;
+}
+
+.kelola-content { 
+    display: grid; 
+    grid-template-columns: 320px 1fr; 
+    gap: 20px; 
+}
+
+/* Kotak Form dan Tabel */
+.kelola-form-box, .kelola-table-box { 
+    background: white; 
+    padding: 20px; 
+    border-radius: 15px; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+}
+
+.kelola-table-box {
+    overflow: hidden; /* Sama dengan table-section */
+}
+
+form { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+}
+
+form input, form textarea, form select { 
+    padding: 10px; 
+    border: 1px solid #ddd; 
+    border-radius: 8px; 
+    width: 100%;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Tombol Simpan (Gaya submit-user-btn) */
+.btn-primary { 
+    background: #6a11cb; 
+    color: white; 
+    border: none; 
+    padding: 12px; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background: #2575fc;
+}
+
+.btn-cancel { 
+    background: #f1f1f1; 
+    border: none; 
+    padding: 10px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    margin-top: 5px; 
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
+
+.table-scroll { 
+    overflow-x: auto; 
+    max-height: 500px; 
+}
+
+.modern-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 13px; 
+}
+
+.modern-table th { 
+    background: #f8f9fa; 
+    padding: 12px; 
+    text-align: left; 
+    position: sticky; 
+    top: 0; 
+    border-bottom: 2px solid #eee;
+}
+
+.modern-table td { 
+    padding: 12px; 
+    border-bottom: 1px solid #eee; 
+    vertical-align: middle; 
+}
+
+.img-p { 
+    width: 50px; 
+    height: 50px; 
+    object-fit: cover; 
+    border-radius: 8px; 
+    border: 1px solid #eee; 
+}
+
+.desc-text { 
+    max-width: 150px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    color: #666; 
+}
+
+.action-cell { 
+    display: flex; 
+    gap: 5px; 
+}
+
+.btn-edit { 
+    background: #ffc107; 
+    border: none; 
+    padding: 6px 12px; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    font-weight: bold; 
+}
+
+.btn-delete { 
+    background: #ff4757; 
+    color: white; 
+    border: none; 
+    padding: 6px 12px; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    font-weight: bold; 
+}

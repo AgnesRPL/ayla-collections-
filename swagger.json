@@ -1,0 +1,990 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Toko Pakaian API Agnes",
+    "version": "1.0.0",
+    "description": "Dokumentasi lengkap untuk semua endpoint API Toko Pakaian."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Base URL untuk API."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Categories",
+      "description": "Master Data Kategori Produk"
+    },
+    {
+      "name": "Products",
+      "description": "Manajemen Data Produk dan Stok"
+    },
+    {
+      "name": "Transactions",
+      "description": "Pencatatan dan Riwayat Transaksi Penjualan"
+    },
+    {
+      "name": "Users",
+      "description": "Manajemen Akun Pengguna (Profil, Pendaftaran, Deaktivasi)"
+    },
+    {
+      "name": "Auth",
+      "description": "Otentikasi Pengguna (Login, Logout, Refresh Token)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Masukkan JWT Access Token (misalnya: Bearer eyJhbGciOiJIUzI1NiI...)"
+      }
+    },
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "Joko"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "password123"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "Risqi"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "risqi@pakaian.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "password123"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["Admin", "Manager", "Kasir"],
+            "example": "Kasir",
+            "description": "Hanya Admin yang bisa mendaftarkan user baru dengan role selain Kasir"
+          }
+        },
+        "required": [
+          "username",
+          "email",
+          "password",
+          "role"
+        ]
+      },
+      "DeactivateRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "example": 5,
+            "description": "ID pengguna yang akan dinonaktifkan."
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 13
+          },
+          "username": {
+            "type": "string",
+            "example": "Wahyu"
+          },
+          "email": {
+            "type": "string",
+            "example": "wahyu@pakaian.com"
+          },
+          "role": {
+            "type": "string",
+            "example": "Kasir"
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Pakaian Pria"
+          },
+          "description": {
+            "type": "string",
+            "example": "Kemeja, Kaos, Celana, dan Jaket Pria"
+          }
+        },
+        "required": ["name"]
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 53
+          },
+          "name": {
+            "type": "string",
+            "example": "Kaos Dry-Fit Lengan Pendek"
+          },
+          "categoryId": {
+            "type": "integer",
+            "example": 13
+          },
+          "price": {
+            "type": "number",
+            "format": "float",
+            "example": 89000.00
+          },
+          "stock": {
+            "type": "integer",
+            "example": 41
+          }
+        },
+        "required": ["name", "categoryId", "price", "stock"]
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 5001
+          },
+          "userId": {
+            "type": "integer",
+            "example": 3
+          },
+          "totalAmount": {
+            "type": "number",
+            "format": "float",
+            "example": 198000.00
+          },
+          "transactionDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productId": { "type": "integer" },
+                "quantity": { "type": "integer" },
+                "subtotal": { "type": "number" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login Pengguna",
+        "description": "Mengautentikasi pengguna menggunakan username dan password dan mendapatkan JWT.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        },
+                        "token": {
+                          "type": "object",
+                          "properties": {
+                            "accessToken": {
+                              "type": "string",
+                              "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                            },
+                            "refreshToken": {
+                              "type": "string",
+                              "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Kredensial tidak valid."
+          }
+        }
+      }
+    },
+    "/auth/refresh-token": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Refresh Access Token",
+        "description": "Mendapatkan Access Token baru menggunakan Refresh Token yang valid.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  }
+                },
+                "required": ["refreshToken"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Access Token berhasil diperbarui.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accessToken": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Refresh Token tidak valid atau kedaluwarsa."
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Logout Pengguna",
+        "description": "Menghapus Refresh Token dari server (dan juga Access Token jika diimplementasikan di sisi klien).",
+        "responses": {
+          "200": {
+            "description": "Logout Berhasil. Token telah dihapus dari sistem."
+          },
+          "401": {
+            "description": "Token tidak valid."
+          }
+        }
+      }
+    },
+    "/users/profile": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Mengambil profil user yang sedang login (Semua role)",
+        "description": "Mendapatkan detail pengguna yang sedang login (berdasarkan Access Token).",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail profil pengguna.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak valid atau hilang."
+          }
+        }
+      }
+    },
+    "/users/register": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Mendaftarkan user baru (Publik)",
+        "description": "Mendaftarkan pengguna baru (Admin & Kasir). Mungkin memerlukan otorisasi admin tergantung implementasi.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pengguna berhasil dibuat.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Input tidak valid."
+          },
+          "403": {
+            "description": "Akses Ditolak (Hanya Admin yang dapat mendaftarkan role Manager/Admin)."
+          }
+        }
+      }
+    },
+    "/users/deactivate-user": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Menonaktifkan user (Hanya Admin, ID di Body)",
+        "description": "Mengubah status pengguna tertentu menjadi tidak aktif. Hanya dapat dilakukan oleh Admin.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeactivateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pengguna berhasil dinonaktifkan."
+          },
+          "403": {
+            "description": "Akses Ditolak (Hanya untuk Admin)."
+          },
+          "404": {
+            "description": "Pengguna tidak ditemukan."
+          }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Melihat list semua kategori",
+        "description": "Melihat list semua kategori.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar kategori",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Category"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Menyimpan kategori baru (Hanya Admin)",
+        "description": "Membuat kategori baru. Hanya dapat diakses oleh Admin.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Category"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Kategori berhasil dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Akses Ditolak."
+          }
+        }
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Melihat kategori berdasarkan ID",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail kategori",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Kategori tidak ditemukan"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Mengubah kategori yang ada berdasarkan ID",
+        "description": "Mengupdate detail kategori. Hanya dapat diakses oleh Admin.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Category"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Kategori berhasil diupdate"
+          },
+          "403": {
+            "description": "Akses Ditolak."
+          },
+          "404": {
+            "description": "Kategori tidak ditemukan"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Menghapus kategori yang ada berdasarkan ID (Hanya Admin)",
+        "description": "Menghapus kategori. Hanya dapat diakses oleh Admin.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Kategori berhasil dihapus"
+          },
+          "403": {
+            "description": "Akses Ditolak."
+          },
+          "404": {
+            "description": "Kategori tidak ditemukan"
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Melihat list semua product",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Menyimpan product baru (Hanya Admin)",
+        "description": "Membuat product baru. Hanya dapat diakses oleh Admin.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product berhasil dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Akses Ditolak."
+          }
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Melihat product berdasarkan ID",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product tidak ditemukan"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Mengubah product yang ada berdasarkan ID (Hanya Admin)",
+        "description": "Mengupdate detail product dan stok. Hanya dapat diakses oleh Admin.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product berhasil diupdate"
+          },
+          "403": {
+            "description": "Akses Ditolak."
+          },
+          "404": {
+            "description": "Product tidak ditemukan"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Menghapus product yang ada berdasarkan ID (Hanya Admin)",
+        "description": "Menghapus product. Hanya dapat diakses oleh Admin.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Product berhasil dihapus"
+          },
+          "403": {
+            "description": "Akses Ditolak."
+          },
+          "404": {
+            "description": "Product tidak ditemukan"
+          }
+        }
+      }
+    },
+    "/transactions": {
+      "get": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Melihat list semua transaksi",
+        "description": "Mendapatkan daftar semua transaksi. Hanya Admin yang dapat melihat semua, Kasir hanya melihat transaksi sendiri.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar transaksi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Menyimpan transaksi baru (Kasir atau Admin)",
+        "description": "Mencatat transaksi penjualan baru. Dijalankan oleh Kasir.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "integer",
+                    "example": 3,
+                    "description": "ID Kasir yang membuat transaksi (opsional, jika tidak diberikan akan diambil dari token)"
+                  },
+                  "items": {
+                    "type": "array",
+                    "description": "Daftar product yang dibeli.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "productId": {
+                          "type": "integer",
+                          "example": 101
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "example": 2
+                        }
+                      },
+                      "required": [
+                        "productId",
+                        "quantity"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "items"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaksi berhasil dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Stok kurang atau product tidak ditemukan."
+          }
+        }
+      }
+    },
+    "/transactions/{id}": {
+      "get": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Menyimpan transaksi berdasarkan ID (Kasir atau Admin)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail transaksi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Akses Ditolak (Jika bukan transaksi Kasir tersebut dan bukan Admin)."
+          },
+          "404": {
+            "description": "Transaksi tidak ditemukan"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Mengubah transaksi yang ada berdasarkan ID (Hanya Admin)",
+        "description": "Mengupdate atau mengoreksi transaksi. **PERHATIAN: Transaksi PUT sering kali lebih aman diimplementasikan sebagai endpoint 'Batalkan' (misalnya POST /transactions/{id}/cancel) untuk menjaga riwayat data.**",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["Completed", "Cancelled"],
+                    "example": "Cancelled"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transaksi berhasil diupdate atau dibatalkan."
+          },
+          "403": {
+            "description": "Akses Ditolak."
+          },
+          "404": {
+            "description": "Transaksi tidak ditemukan."
+          }
+        }
+      }
+    }
+  }
+}
