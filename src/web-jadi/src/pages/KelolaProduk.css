@@ -11,7 +11,7 @@
 }
 
 .kelola-glass-card {
-    background: rgba(255, 255, 255, 0.2); /* Glassmorphism sama dengan UserAdmin */
+    background: rgba(255, 255, 255, 0.2); 
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     width: 95%;
@@ -31,10 +31,10 @@
 .kelola-header h2 { 
     color: white; 
     margin: 0; 
-    font-weight: 600; /* Sama dengan UserAdmin */
+    font-weight: 600; 
 }
 
-/* Tombol Dashboard (Gaya back-home-btn) */
+/* Tombol Dashboard */
 .btn-dash { 
     background: white; 
     border: none; 
@@ -62,7 +62,7 @@
 }
 
 .kelola-table-box {
-    overflow: hidden; /* Sama dengan table-section */
+    overflow: hidden; 
 }
 
 form { 
@@ -80,7 +80,7 @@ form input, form textarea, form select {
     font-family: 'Poppins', sans-serif;
 }
 
-/* Tombol Simpan (Gaya submit-user-btn) */
+/* Tombol Simpan */
 .btn-primary { 
     background: #6a11cb; 
     color: white; 
