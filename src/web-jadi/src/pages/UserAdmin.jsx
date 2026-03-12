@@ -93,10 +93,8 @@ function UserAdmin() {
                             <table className="user-table">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
                                         <th>Username</th>
                                         <th>Email</th>
-                                        <th>Password</th>
                                         <th>Role</th>
                                         <th>Fullname</th>
                                         <th>Status</th>
@@ -107,10 +105,8 @@ function UserAdmin() {
                                     {users.length > 0 ? (
                                         users.map((u) => (
                                             <tr key={u.id}>
-                                                <td>{u.id}</td>
                                                 <td>{u.username}</td>
                                                 <td>{u.email}</td>
-                                                <td className="pass-text">{u.password ? u.password.substring(0, 10) : "N/A"}...</td>
                                                 <td><span className={`badge ${u.role ? u.role.toLowerCase() : ""}`}>{u.role}</span></td>
                                                 <td><b>{u.fullname}</b></td>
                                                 <td>

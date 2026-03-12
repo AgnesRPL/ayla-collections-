@@ -46,7 +46,6 @@ function Dashboard() {
             if (token) {
                 const userData = getDataFromToken(token);
                 if (userData) {
-                    // Logika: Ambil Fullname dulu, kalau kosong baru Username, kalau kosong lagi baru "User"
                     const nameToShow = userData.fullname || userData.username || "User";
                     setUsername(nameToShow);
                     
@@ -122,22 +121,30 @@ function Dashboard() {
     const handleConfirmPayment = async () => {
         if (!paymentMethod || shippingCost === 0 || !customerName || !address) {
             alert("Harap lengkapi data pengiriman & pembayaran!");
-            return;
+        return;
         }
+    
         const token = localStorage.getItem("token");
-        try {
-            const response = await fetch("http://localhost:5000/transactions", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-                body: JSON.stringify({
-                    total_amount: totalPrice + shippingCost,
-                    payment_method: paymentMethod,
-                    user_id: 9, 
-                    customer_name: customerName,
-                    address: address,
-                    items: cart.map(item => ({ id: parseInt(item.id), qty: parseInt(item.qty) }))
-                }),
-            });
+        const userData = getDataFromToken(token); 
+        const userId = userData ? userData.id : null; 
+
+        if (!userId) {
+            alert("Sesi habis, silakan login kembali.");
+        return;
+        }
+
+    try {
+        const response = await fetch("http://localhost:5000/transactions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({
+                total_amount: totalPrice + shippingCost,
+                payment_method: paymentMethod,
+                user_id: userId, 
+                items: cart.map(item => ({ id: parseInt(item.id), qty: parseInt(item.qty) }))
+            }),
+        });
+
             if (response.ok) {
                 alert("✨ Transaksi Berhasil!");
                 setCart([]); setIsCheckoutOpen(false); fetchData(); 
@@ -164,7 +171,6 @@ function Dashboard() {
                         <button onClick={() => setIsCartOpen(true)} style={navBtnStyle}>🛒 Cart ({cart.reduce((a, b) => a + b.qty, 0)})</button>
                         
                         <div style={{ position: 'relative' }}>
-                            {/* TOMBOL USER DINAMIS DENGAN KAPITALISASI OTOMATIS */}
                             <button 
                                 onClick={() => setIsProfileOpen(!isProfileOpen)} 
                                 style={{ ...navBtnStyle, background: '#6a11cb', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'capitalize' }}
@@ -216,7 +222,7 @@ function Dashboard() {
                 </div>
             </div>
 
-            {/* MODAL KERANJANG & CHECKOUT TETAP SAMA */}
+            {/* MODAL KERANJANG & CHECKOUT */}
             {isCartOpen && (
                 <div style={cartContainerStyle}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -243,7 +249,7 @@ function Dashboard() {
                     </div>
                     <div style={{ borderTop: '2px solid #eee', paddingTop: '15px' }}>
                         <h4 style={{ display: 'flex', justifyContent: 'space-between' }}>Total: <span>Rp {totalPrice.toLocaleString()}</span></h4>
-                        <button disabled={cart.length === 0} onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }} style={{...checkoutBtnStyle, opacity: cart.length === 0 ? 0.5 : 1}}>Checkout Now</button>
+                        <button disabled={cart.length === 0} onClick={() => { setShippingCost(0); setIsCartOpen(false); setIsCheckoutOpen(true); }} style={{...checkoutBtnStyle, opacity: cart.length === 0 ? 0.5 : 1}}>Checkout Now</button>
                     </div>
                 </div>
             )}
@@ -259,7 +265,8 @@ function Dashboard() {
                             <select style={inputS} onChange={(e) => setShippingCost(Number(e.target.value))}>
                                 <option value="0">-- Pilih Ekspedisi --</option>
                                 <option value="15000">JNE (Rp 15,000)</option>
-                                <option value="10000">Anteraja (Rp 10,000)</option>
+                                <option value="10000">J&T Express (Rp 10,000)</option>
+                                <option value="8000">Anteraja (Rp 8,000)</option>
                             </select>
                         </div>
                         <div style={{ marginTop: '20px' }}>
@@ -270,7 +277,21 @@ function Dashboard() {
                             </div>
                         </div>
                         <div style={summaryBoxStyle}>
-                            <div style={flexSpace}><span>Total Bayar:</span> <span style={{ fontWeight: '800', color: '#6a11cb' }}>Rp {(totalPrice + shippingCost).toLocaleString()}</span></div>
+                            <div style={flexSpace}>
+                                <span>Total Harga Barang:</span> 
+                                <span>Rp {totalPrice.toLocaleString()}</span>
+                            </div>
+                            <div style={flexSpace}>
+                                <span>Biaya Pengiriman:</span> 
+                                <span>Rp {shippingCost.toLocaleString()}</span>
+                            </div>
+                                <hr style={{ border: 'none', borderTop: '1px solid #ddd', margin: '10px 0' }} />
+                            <div style={flexSpace}>
+                                <span style={{ fontWeight: 'bold' }}>Total Bayar:</span> 
+                                <span style={{ fontWeight: '800', color: '#6a11cb' }}>
+                                Rp {(totalPrice + shippingCost).toLocaleString()}
+                                </span>
+                            </div>
                         </div>
                         <button onClick={handleConfirmPayment} style={confirmBtnStyle}>Konfirmasi & Bayar</button>
                     </div>

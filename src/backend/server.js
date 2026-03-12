@@ -53,7 +53,7 @@ app.get('/categories', async (req, res) => {
     }
 });
 
-// --- API USERS (YANG TADI HILANG) ---
+// --- API USERS ---
 app.get('/users', async (req, res) => {
     try {
         const result = await pool.query("SELECT id, username, fullname, email, role, is_active, password FROM users ORDER BY id DESC");
@@ -138,6 +138,39 @@ app.delete('/products/:id', async (req, res) => {
     } catch (err) {
         res.status(500).send("Gagal hapus: Produk ini mungkin terikat data transaksi.");
     }
+});
+
+
+// --- API TRANSAKSI ---
+app.post('/transactions', async (req, res) => {
+    const client = await pool.connect(); 
+    try {
+        const { user_id, total_amount, payment_method, items } = req.body;
+        
+        if (!user_id) {
+            return res.status(400).json({ error: "User ID tidak ditemukan!" });
+        }
+
+        await client.query('BEGIN');
+        
+        const transQuery = `INSERT INTO transactions (user_id, transaction_date, total_amount, payment_method, created_at, updated_at) 
+                            VALUES ($1, NOW(), $2, $3, NOW(), NOW()) RETURNING id`;
+        
+        const newTransaction = await client.query(transQuery, [user_id, total_amount, payment_method || 'Cash']);
+        const transactionId = newTransaction.rows[0].id;
+
+        if (items && items.length > 0) {
+            for (const item of items) {
+                await client.query('UPDATE products SET stock = stock - $1 WHERE id = $2 AND stock >= $1', [item.qty, item.id]);
+            }
+        }
+        
+        await client.query('COMMIT');
+        res.json({ message: "✨ Transaksi Berhasil!", transaction_id: transactionId });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        res.status(500).json({ error: err.message });
+    } finally { client.release(); }
 });
 
 app.listen(5000, () => {
